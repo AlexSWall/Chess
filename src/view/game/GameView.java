@@ -10,12 +10,14 @@ import org.newdawn.slick.state.StateBasedGame;
 import game.board.Board;
 import game.board.Position;
 import game.board.promotion.PromotionListener;
+import game.modes.TwoPlayerColour;
 import game.pieces.Pawn;
 import game.pieces.Piece;
 import view.View;
 
 public class GameView extends BasicGameState
 {
+	private final View	mainView;
 	private final int	ID;
 	private final Board	board;
 
@@ -26,6 +28,7 @@ public class GameView extends BasicGameState
 
 	public GameView( View mainView, int ID, Board board )
 	{
+		this.mainView = mainView;
 		this.ID = ID;
 		this.board = board;
 	}
@@ -96,25 +99,71 @@ public class GameView extends BasicGameState
 		return board;
 	}
 
-	public Position viewLocationToGrid ( int viewX, int viewY )
+	public Position viewToGridCoordinates ( int viewX, int viewY )
 	{
-		return new Position( (int) ( ( viewX - 1 ) / 83.33 ), (int) ( ( viewY - 1 ) / 83.33 ) );
+		return viewToGridCoordinates( getRotationAngle(), viewX, viewY );
 	}
 
-	public Position gridLocationToView ( int gridX, int gridY )
+	public Position gridToViewCoordinates ( int gridX, int gridY )
 	{
-		return new Position( (int) ( 1 + 83.33 * gridX ), (int) ( 1 + 83.33 * gridY ) );
+		return gridToViewCoordinates( getRotationAngle(), gridX, gridY );
+	}
+
+	private int getRotationAngle ()
+	{
+		switch ( board.getHumanPlayerColour() )
+		{
+			case WHITE:
+				return 0;
+			case BLACK:
+				return 180;
+			case BOTH:
+				return ( board.getMovementLogic().getPlayerTurn() == TwoPlayerColour.BLACK ? 180 : 0 );
+		}
+		return 0;
+	}
+
+	private Position viewToGridCoordinates ( int theta, int x, int y )
+	{
+		int gridX = (int) ( ( x - 1 ) / 83.33 );
+		int gridY = (int) ( ( y - 1 ) / 83.33 );
+
+		switch ( theta )
+		{
+			case 0:
+				return new Position( gridX, gridY );
+			case 180:
+				return new Position( board.getRowLength( gridY ) - gridX - 1, board.getColumnLength( gridX ) - gridY - 1 );
+			default:
+				return null;
+		}
+	}
+
+	private Position gridToViewCoordinates ( int theta, int x, int y )
+	{
+		int viewX = (int) ( 1 + 83.33 * x );
+		int viewY = (int) ( 1 + 83.33 * y );
+
+		switch ( theta )
+		{
+			case 0:
+				return new Position( viewX, viewY );
+			case 180:
+				return new Position( mainView.getAppSettings().width - 82 - viewX - 1, mainView.getAppSettings().height - 82 - viewY - 1 );
+			default:
+				return null;
+		}
 	}
 
 	public Piece getPieceAt ( int x, int y )
 	{
-		Position pos = viewLocationToGrid( x, y );
+		Position pos = viewToGridCoordinates( x, y );
 		return board.isASquare( pos.x, pos.y ) ? board.getPiece( pos.x, pos.y ) : null;
 	}
 
 	public void drawPieceAt ( Piece piece, int x, int y )
 	{
-		Position pos = gridLocationToView( x, y );
+		Position pos = gridToViewCoordinates( x, y );
 		piece.getImage().draw( pos.x, pos.y );
 	}
 
@@ -138,7 +187,7 @@ public class GameView extends BasicGameState
 	{
 		if ( button == 0 && pieceBeingDragged != null )
 		{
-			Position pos = viewLocationToGrid( x, y );
+			Position pos = viewToGridCoordinates( x, y );
 
 			board.getMovementLogic().tryToMovePiece( pieceBeingDragged, pos.x, pos.y );
 

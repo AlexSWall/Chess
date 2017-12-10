@@ -16,7 +16,7 @@ public class Pawn extends Piece
 	{
 		super( board, "Pawn", colour, x, y );
 
-		direction = colour.getPawnMovement() * ( board.getColourAtBottom() == TwoPlayerColour.WHITE ? 1 : -1 );
+		direction = colour.getPawnMovement();
 		initialY = y;
 	}
 

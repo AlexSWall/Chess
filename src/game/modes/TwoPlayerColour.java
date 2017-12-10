@@ -2,7 +2,7 @@ package game.modes;
 
 public enum TwoPlayerColour implements PlayerColour
 {
-	WHITE, BLACK;
+	WHITE, BLACK, BOTH;
 
 	@Override
 	public int getPawnMovement ()
@@ -11,8 +11,13 @@ public enum TwoPlayerColour implements PlayerColour
 	}
 
 	@Override
-	public PlayerColour getNextTurnsColour ( PlayerColour colour )
+	public TwoPlayerColour getNextTurnsColour ()
 	{
-		return ( colour == WHITE ? BLACK : WHITE );
+		return ( this == WHITE ? BLACK : WHITE );
+	}
+
+	public static TwoPlayerColour[] getPlayerColours ()
+	{
+		return new TwoPlayerColour[] { WHITE, BLACK };
 	}
 }
