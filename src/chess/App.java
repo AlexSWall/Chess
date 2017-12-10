@@ -47,7 +47,6 @@ public class App
 	public void makeNewGame ( GameSettings settings )
 	{
 		logger.log( Level.FINE, "Creating New Game." );
-		System.out.println( settings.playerColour );
 		board.setup( settings );
 		view.startGame( settings );
 	}

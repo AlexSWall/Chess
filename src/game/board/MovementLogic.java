@@ -49,16 +49,17 @@ public class MovementLogic
 	 * @param piece The piece being moved.
 	 * @param newX The x-coordinate of the destination.
 	 * @param newY The y-coordinate of the destination.
+	 * @return Whether the movement was successful.
 	 */
-	public void tryToMovePiece ( Piece piece, int newX, int newY )
+	public boolean tryToMovePiece ( Piece piece, int newX, int newY )
 	{
 		int oldY = piece.getY();
 
 		if ( piece.getColour() != playerTurn )
-			return;
+			return false;
 
 		if ( !piece.isMove( newX, newY ) )
-			return;
+			return false;
 
 		boolean isAttemptingCastling = castlingLogic.isAttemptedCastlingMove( piece, newX, newY );
 		boolean isAttemptingEnPassant = piece instanceof Pawn && ( (Pawn) piece ).canEnPassant( newX, newY );
@@ -67,7 +68,7 @@ public class MovementLogic
 		if ( isKingInCheck( piece.getColour() ) )
 		{
 			reversibleMover.reverseLastMove();
-			return;
+			return false;
 		}
 
 		if ( piece instanceof Pawn )
@@ -91,6 +92,8 @@ public class MovementLogic
 		{
 			playerTurn = nextPlayersTurn;
 		}
+
+		return true;
 	}
 
 	public boolean canTakePassingPawn ( Piece piece )

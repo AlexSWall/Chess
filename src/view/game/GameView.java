@@ -24,6 +24,7 @@ public class GameView extends BasicGameState
 	private PromotionView promotionView;
 
 	private Piece		pieceBeingDragged	= null;
+	private Piece		pieceClicked		= null;
 	private Position	mousePosition;
 
 	public GameView( View mainView, int ID, Board board )
@@ -155,12 +156,25 @@ public class GameView extends BasicGameState
 		}
 	}
 
+	/**
+	 * Gets piece at (x,y) as clicked in the view.
+	 *
+	 * @param x The x-coordinate in the view.
+	 * @param y The y-coordinate in the view.
+	 * @return The piece at this (x,y) coordinate.
+	 */
 	public Piece getPieceAt ( int x, int y )
 	{
 		Position pos = viewToGridCoordinates( x, y );
 		return board.isASquare( pos.x, pos.y ) ? board.getPiece( pos.x, pos.y ) : null;
 	}
 
+	/**
+	 * Draws the piece based upon its position in the grid.
+	 *
+	 * @param x The x-coordinate in the grid.
+	 * @param y The y-coordinate in the grid.
+	 */
 	public void drawPieceAt ( Piece piece, int x, int y )
 	{
 		Position pos = gridToViewCoordinates( x, y );
@@ -192,6 +206,23 @@ public class GameView extends BasicGameState
 			board.getMovementLogic().tryToMovePiece( pieceBeingDragged, pos.x, pos.y );
 
 			pieceBeingDragged = null;
+		}
+	}
+
+	@Override
+	public void mouseClicked ( int button, int x, int y, int clickCount )
+	{
+		if ( button == 0 )
+		{
+			Position pos = viewToGridCoordinates( x, y );
+			if ( pieceClicked != null && board.getMovementLogic().tryToMovePiece( pieceClicked, pos.x, pos.y ) )
+			{
+				pieceClicked = null;
+			}
+			else
+			{
+				pieceClicked = getPieceAt( x, y );
+			}
 		}
 	}
 

@@ -4,8 +4,6 @@ import javax.swing.SwingUtilities;
 
 /*
  * TODO:
- * -> Add clicking to move.
- *
  * -> Speed up canBeMoved, getPossibleMove, checking for possible moves/check, etc.
  *
  * -> Castling in Chess960
