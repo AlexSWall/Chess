@@ -8,6 +8,9 @@ import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
 import game.board.Board;
+import game.board.Position;
+import game.board.promotion.PromotionListener;
+import game.pieces.Pawn;
 import game.pieces.Piece;
 import view.View;
 
@@ -16,8 +19,10 @@ public class GameView extends BasicGameState
 	private final int	ID;
 	private final Board	board;
 
-	private Piece	pieceBeingDragged	= null;
-	private Input	mostRecentInput		= null;
+	private PromotionView promotionView;
+
+	private Piece		pieceBeingDragged	= null;
+	private Position	mousePosition;
 
 	public GameView( View mainView, int ID, Board board )
 	{
@@ -35,6 +40,12 @@ public class GameView extends BasicGameState
 	public void render ( GameContainer gc, StateBasedGame sbg, Graphics g ) throws SlickException
 	{
 		board.boardImage.draw( 0, 0 );
+
+		if ( promotionView.isActive() )
+		{
+			promotionView.render( gc, sbg, g );
+			return;
+		}
 
 		int x, y;
 
@@ -54,8 +65,8 @@ public class GameView extends BasicGameState
 
 		if ( pieceBeingDragged != null )
 		{
-			x = mostRecentInput.getMouseX() - 40;
-			y = mostRecentInput.getMouseY() - 40;
+			x = mousePosition.x - 40;
+			y = mousePosition.y - 40;
 			pieceBeingDragged.getImage().draw( x, y );
 		}
 	}
@@ -63,7 +74,10 @@ public class GameView extends BasicGameState
 	@Override
 	public void update ( GameContainer gc, StateBasedGame sbg, int delta ) throws SlickException
 	{
-		mostRecentInput = gc.getInput();
+		Input input = gc.getInput();
+
+		mousePosition = new Position( input.getMouseX(), input.getMouseY() );
+
 	}
 
 	@Override
@@ -72,31 +86,47 @@ public class GameView extends BasicGameState
 		return ID;
 	}
 
-	private int[] viewLocationToGrid ( int viewX, int viewY )
+	public PromotionView getPromotionView ()
 	{
-		return new int[] { (int) ( ( viewX - 1 ) / 83.33 ), (int) ( ( viewY - 1 ) / 83.33 ) };
+		return promotionView;
 	}
 
-	private int[] gridLocationToView ( int gridX, int gridY )
+	public Board getBoard ()
 	{
-		return new int[] { (int) ( 1 + 83.33 * gridX ), (int) ( 1 + 83.33 * gridY ) };
+		return board;
 	}
 
-	private Piece getPieceAt ( int x, int y )
+	public Position viewLocationToGrid ( int viewX, int viewY )
 	{
-		int[] loc = viewLocationToGrid( x, y );
-		return board.getPotentialPiece( loc[ 0 ], loc[ 1 ] );
+		return new Position( (int) ( ( viewX - 1 ) / 83.33 ), (int) ( ( viewY - 1 ) / 83.33 ) );
 	}
 
-	private void drawPieceAt ( Piece piece, int x, int y )
+	public Position gridLocationToView ( int gridX, int gridY )
 	{
-		int[] loc = gridLocationToView( x, y );
-		piece.getImage().draw( loc[ 0 ], loc[ 1 ] );
+		return new Position( (int) ( 1 + 83.33 * gridX ), (int) ( 1 + 83.33 * gridY ) );
+	}
+
+	public Piece getPieceAt ( int x, int y )
+	{
+		Position pos = viewLocationToGrid( x, y );
+		return board.isASquare( pos.x, pos.y ) ? board.getPiece( pos.x, pos.y ) : null;
+	}
+
+	public void drawPieceAt ( Piece piece, int x, int y )
+	{
+		Position pos = gridLocationToView( x, y );
+		piece.getImage().draw( pos.x, pos.y );
 	}
 
 	@Override
 	public void mousePressed ( int button, int x, int y )
 	{
+		if ( promotionView.isActive() )
+		{
+			promotionView.mousePressed( button, x, y );
+			return;
+		}
+
 		if ( button == 0 )
 		{
 			pieceBeingDragged = getPieceAt( x, y );
@@ -108,11 +138,21 @@ public class GameView extends BasicGameState
 	{
 		if ( button == 0 && pieceBeingDragged != null )
 		{
-			int[] loc = viewLocationToGrid( x, y );
+			Position pos = viewLocationToGrid( x, y );
 
-			board.tryToMovePiece( pieceBeingDragged, loc[ 0 ], loc[ 1 ] );
+			board.getMovementLogic().tryToMovePiece( pieceBeingDragged, pos.x, pos.y );
 
 			pieceBeingDragged = null;
 		}
+	}
+
+	public void createPromotionView ( PromotionListener listener )
+	{
+		promotionView = new PromotionView( this, listener );
+	}
+
+	public void startPromotionChoiceMode ( Pawn pawn )
+	{
+		this.promotionView.activate( pawn );
 	}
 }

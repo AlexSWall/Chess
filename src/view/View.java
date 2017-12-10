@@ -34,9 +34,6 @@ public class View extends StateBasedGame
 	@Override
 	public void initStatesList ( GameContainer gc ) throws SlickException
 	{
-		this.getState( State.MENU.getValue() ).init( gc, this );
-		this.getState( State.GAME.getValue() ).init( gc, this );
-
 		this.enterState( State.MENU.getValue() );
 	}
 
@@ -59,5 +56,10 @@ public class View extends StateBasedGame
 	public void startGame ( GameSettings settings )
 	{
 		this.enterState( State.GAME.getValue() );
+	}
+
+	public GameView getGameView ()
+	{
+		return game;
 	}
 }

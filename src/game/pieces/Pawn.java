@@ -40,7 +40,11 @@ public class Pawn extends Piece
 
 		for ( int dx = -1; dx <= 1; dx += 2 )
 		{
-			if ( board.hasPiece( x + dx, y + direction ) && board.getPotentialPiece( x + dx, y + direction ).colour != this.colour )
+			if ( board.hasPiece( x + dx, y + direction ) && board.getPiece( x + dx, y + direction ).colour != this.colour )
+			{
+				possibleMoves.add( new Position( x + dx, y + direction ) );
+			}
+			else if ( canEnPassant( x + dx, y + direction ) )
 			{
 				possibleMoves.add( new Position( x + dx, y + direction ) );
 			}
@@ -58,17 +62,46 @@ public class Pawn extends Piece
 				return false;
 
 			if ( dest_x == this.x )
-				return board.isASquare( dest_x, dest_y ) && !board.hasPiece( dest_x, dest_y );
+				return !board.hasPiece( dest_x, dest_y );
 			else
-				return board.hasPiece( dest_x, dest_y ) && board.getPotentialPiece( dest_x, dest_y ).colour != this.colour;
+			{
+				if ( board.hasPiece( dest_x, dest_y ) && board.getPiece( dest_x, dest_y ).colour != this.colour )
+					return true;
+				else
+					return canEnPassant( dest_x, dest_y );
+			}
 		}
 		else if ( dest_y == y + 2 * direction && y == initialY )
 		{
-			boolean canMoveOneForward = board.isASquare( x, y + direction ) && !board.hasPiece( x, y + direction );
-			boolean canMoveTwoForward = canMoveOneForward && board.isASquare( x, y + 2 * direction ) && !board.hasPiece( x, y + 2 * direction );
+			boolean canMoveOneForward = !board.hasPiece( x, y + direction );
+			boolean canMoveTwoForward = canMoveOneForward && !board.hasPiece( x, y + 2 * direction );
 			return canMoveTwoForward;
 		}
-		else
+
+		return false;
+	}
+
+	public boolean canEnPassant ( int newX, int newY )
+	{
+		if ( Math.abs( newX - x ) != 1 || newY != y + direction )
 			return false;
+
+		if ( board.hasPiece( newX, newY ) || !board.hasPiece( newX, y ) )
+			return false;
+
+		if ( !( board.getPiece( newX, y ) instanceof Pawn ) || board.getPiece( newX, y ).colour == this.colour )
+			return false;
+
+		if ( board.getMovementLogic().canTakePassingPawn( board.getPiece( newX, y ) ) )
+			return true;
+		return false;
+	}
+
+	public boolean canPromote ()
+	{
+		if ( direction == -1 )
+			return y == 0;
+		else // direction == 1
+			return y == board.getColumnLength( x ) - 1;
 	}
 }

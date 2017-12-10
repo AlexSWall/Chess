@@ -12,12 +12,13 @@ import game.modes.TwoPlayerColour;
 
 public abstract class Piece
 {
-	protected Board				board;
-	protected String			name;
-	protected int				x;
-	protected int				y;
-	protected TwoPlayerColour	colour;
-	protected Image				image;
+	protected final Board			board;
+	protected final String			name;
+	protected final TwoPlayerColour	colour;
+	protected final Image			image;
+
+	protected int	x;
+	protected int	y;
 
 	protected boolean hasMoved;
 
@@ -32,29 +33,21 @@ public abstract class Piece
 		this.colour = colour;
 		this.hasMoved = false;
 
+		Image tempImage = null;
 		try
 		{
-			image = new Image( Paths.get( "resources", "pieces", ( colour == TwoPlayerColour.WHITE ? "White " : "Black " ) + name + ".png" ).toString() );
+			tempImage = new Image( Paths.get( "resources", "pieces", ( colour == TwoPlayerColour.WHITE ? "White " : "Black " ) + name + ".png" ).toString() );
 		}
 		catch ( SlickException e )
 		{
 			e.printStackTrace();
 		}
+		this.image = tempImage;
 	}
 
 	public abstract boolean isMove ( int x, int y );
 
-	public final boolean canMoveTo ( int x, int y )
-	{
-		if ( isMove( x, y ) )
-		{
-			if ( !board.moveResultHasOwnKingInCheck( this, x, y ) )
-				return true;
-		}
-		return false;
-	}
-
-	public boolean sudoMove ( int x, int y )
+	public boolean setPosition ( int x, int y )
 	{
 		this.x = x;
 		this.y = y;

@@ -36,7 +36,7 @@ public abstract class SlidePiece extends Piece
 				{
 					possibleMoves.add( new Position( xNew, yNew ) );
 				}
-				else if ( board.hasPiece( xNew, yNew ) && board.getPotentialPiece( xNew, yNew ).colour != this.colour )
+				else if ( board.hasPiece( xNew, yNew ) && board.getPiece( xNew, yNew ).colour != this.colour )
 				{
 					possibleMoves.add( new Position( xNew, yNew ) );
 					continue outerloop;
@@ -74,6 +74,6 @@ public abstract class SlidePiece extends Piece
 		if ( !board.isASquare( x + xDelta, y + yDelta ) )
 			return false;
 
-		return board.isEmptySquare( x + xDelta, y + yDelta ) || board.getPotentialPiece( x + xDelta, y + yDelta ).colour != this.colour;
+		return board.isEmptySquare( x + xDelta, y + yDelta ) || board.getPiece( x + xDelta, y + yDelta ).colour != this.colour;
 	}
 }

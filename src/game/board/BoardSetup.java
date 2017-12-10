@@ -5,8 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
 
 import game.GameSettings;
@@ -25,8 +29,10 @@ public class BoardSetup
 	private final GameSettings	settings;
 
 	private Square[][]						squares;
-	private TwoPlayerColour	playerTurn;
-	private TwoPlayerColour	colourAtBottom;
+	private TwoPlayerColour					playerTurn;
+	private TwoPlayerColour					colourAtBottom;
+	private Set<Piece>						pieces;
+	private Map<TwoPlayerColour, Set<King>>	playersKings;
 
 	private Function<TwoPlayerColour, TwoPlayerColour> nextTurnFunc;
 
@@ -39,14 +45,19 @@ public class BoardSetup
 
 	public Square[][] getNewBoardSquares ()
 	{
-		if ( settings.useDefaultSetup )
+		if ( settings.type == BoardSetupType.STANDARD )
 		{
 			standardPieceSetup();
 		}
-		else
+		else if ( settings.type == BoardSetupType.CHESS960 )
 		{
 			chess960RandomPieceSetup();
 		}
+		else
+		{
+			standardPieceSetup();
+		}
+		createPieceSets();
 		return squares;
 	}
 
@@ -58,6 +69,16 @@ public class BoardSetup
 	public TwoPlayerColour getPlayerTurn ()
 	{
 		return playerTurn;
+	}
+
+	public Set<Piece> getPieces ()
+	{
+		return pieces;
+	}
+
+	public Map<TwoPlayerColour, Set<King>> getPlayerKingsMap ()
+	{
+		return playersKings;
 	}
 
 	public Function<TwoPlayerColour, TwoPlayerColour> getNextTurnFunction ()
@@ -94,7 +115,37 @@ public class BoardSetup
 				return ( t == TwoPlayerColour.WHITE ? TwoPlayerColour.BLACK : TwoPlayerColour.WHITE );
 			}
 		};
+	}
 
+	private void createPieceSets ()
+	{
+		Piece piece;
+
+		pieces = new HashSet<Piece>();
+		playersKings = new HashMap<TwoPlayerColour, Set<King>>();
+
+		for ( TwoPlayerColour colour : TwoPlayerColour.values() )
+		{
+			playersKings.put( colour, new HashSet<King>() );
+		}
+
+		for ( Square[] squareRow : squares )
+		{
+			for ( Square square : squareRow )
+			{
+				piece = square.getPiece();
+				if ( piece == null )
+				{
+					continue;
+				}
+
+				pieces.add( piece );
+				if ( piece.getClass() == King.class )
+				{
+					playersKings.get( piece.getColour() ).add( (King) piece );
+				}
+			}
+		}
 	}
 
 	private void standardPieceSetup ()

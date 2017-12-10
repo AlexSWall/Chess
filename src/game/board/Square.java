@@ -34,7 +34,7 @@ public class Square
 		this.piece = piece;
 		if ( piece != null )
 		{
-			piece.sudoMove( x, y );
+			piece.setPosition( x, y );
 		}
 	}
 }

@@ -1,11 +1,9 @@
 package game.board;
 
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.swing.event.EventListenerList;
 
@@ -14,65 +12,62 @@ import org.newdawn.slick.SlickException;
 
 import game.GameSettings;
 import game.GameWonListener;
+import game.board.promotion.PromotionChoice;
+import game.board.promotion.PromotionListener;
 import game.modes.TwoPlayerColour;
 import game.pieces.King;
+import game.pieces.Pawn;
 import game.pieces.Piece;
 
 public class Board
 {
-	private ReversibleMover		reversibleMover;
-	public final GameWonFirer	gameWonFirer;
+	public final GameWonFirer gameWonFirer = new GameWonFirer();
 
-	private TwoPlayerColour	colourAtBottom;
-	private Square[][]		squares;
-	private Set<Piece>		pieces	= new HashSet<Piece>();
-	private TwoPlayerColour	playerTurn;
+	private GameSettings	settings;
+	private MovementLogic	movementLogic;
+	private CastlingLogic	castlingLogic;
 
-	private Map<TwoPlayerColour, Set<King>> playersKings = new HashMap<TwoPlayerColour, Set<King>>();
+	private Square[][]						squares;
+	private Set<Piece>						pieces;
+	private Map<TwoPlayerColour, Set<King>>	playersKings;
+	private TwoPlayerColour					colourAtBottom;
 
-	private Function<TwoPlayerColour, TwoPlayerColour> nextTurnFunc;
+	private PromotionListener listener;
 
 	public Image boardImage;
 
 	public Board()
 	{
-		reversibleMover = new ReversibleMover();
-		gameWonFirer = new GameWonFirer();
 	}
 
 	public void init () throws SlickException
 	{
 		String menuOptionsPath = Paths.get( "resources", "main" ).toString();
 		boardImage = new Image( Paths.get( menuOptionsPath, "ChessBoard.PNG" ).toString() );
+		System.out.println( "Initialising Board." );
+		pieces = new HashSet<Piece>();
 	}
 
 	public void setup ( GameSettings settings )
 	{
-		BoardSetup setup = new BoardSetup( this, settings );
+		System.out.println( "Setting Up" );
+		this.settings = settings;
 
+		BoardSetup setup = new BoardSetup( this, settings );
 		setup.setupBoard();
-		playerTurn = setup.getPlayerTurn();
-		nextTurnFunc = setup.getNextTurnFunction();
+
+		castlingLogic = new CastlingLogic( this, settings );
+		movementLogic = new MovementLogic( this, setup, castlingLogic, listener );
+
 		colourAtBottom = setup.getColourAtBottom();
 		squares = setup.getNewBoardSquares();
-
-		updatePiecesSet();
+		pieces = setup.getPieces();
+		playersKings = setup.getPlayerKingsMap();
 	}
 
-	private void updatePiecesSet ()
+	public GameSettings getGameSettings ()
 	{
-		pieces = new HashSet<Piece>();
-
-		for ( Square[] squareRow : squares )
-		{
-			for ( Square square : squareRow )
-			{
-				if ( square.getPiece() != null )
-				{
-					pieces.add( square.getPiece() );
-				}
-			}
-		}
+		return settings;
 	}
 
 	public Set<Piece> getPieces ()
@@ -83,6 +78,11 @@ public class Board
 	public TwoPlayerColour getColourAtBottom ()
 	{
 		return colourAtBottom;
+	}
+
+	public void setPromotionListener ( PromotionListener listener )
+	{
+		this.listener = listener;
 	}
 
 	public boolean isASquare ( int x, int y )
@@ -100,155 +100,52 @@ public class Board
 		return isASquare( x, y ) && getPiece( x, y ) != null;
 	}
 
-	public Piece getPotentialPiece ( int x, int y )
-	{
-		return isASquare( x, y ) ? getPiece( x, y ) : null;
-	}
-
 	public Piece getPiece ( int x, int y )
 	{
 		return squares[ y ][ x ].getPiece();
 	}
 
-	private void setPiece ( Piece piece, int x, int y )
+	public void setPiece ( Piece piece, int x, int y )
 	{
 		squares[ y ][ x ].setPiece( piece );
 	}
 
-	public void tryToMovePiece ( Piece piece, int newX, int newY )
+	public Square getSquare ( int x, int y )
 	{
-		if ( piece.getColour() != playerTurn )
-			return;
-
-		if ( !piece.canMoveTo( newX, newY ) )
-			return;
-
-		reversibleMover.doMove( piece, newX, newY );
-
-		playerTurn = nextTurnFunc.apply( piece.getColour() );
-
-		if ( !playerCanMove( playerTurn ) )
-		{
-			gameWonFirer.fireGameWonEvent( piece.getColour() );
-		}
+		return squares[ y ][ x ];
 	}
 
-	public boolean colourInSquareIsAttacked ( TwoPlayerColour colourToAttack, int x, int y )
+	public void promote ( Pawn pawn, PromotionChoice choice )
 	{
-		for ( Piece piece : pieces )
-		{
-			if ( piece.getColour() != colourToAttack )
-			{
-				if ( piece.isMove( x, y ) )
-					return true;
-			}
-		}
-		return false;
+		movementLogic.promote( pawn, choice );
 	}
 
-	public boolean moveResultHasOwnKingInCheck ( Piece pieceMoving, int newX, int newY )
+	public int getRowLength ( int row )
 	{
-		reversibleMover.doMove( pieceMoving, newX, newY );
-
-		TwoPlayerColour colourMoved = pieceMoving.getColour();
-
-		King king = null;
-		Position kingPosition = null;
-
-		for ( Piece piece : pieces )
-		{
-			if ( piece.getClass() == King.class && colourMoved == piece.getColour() )
-			{
-				king = (King) piece;
-				kingPosition = new Position( king.getX(), king.getY() );
-				break;
-			}
-		}
-
-		for ( Piece piece : pieces )
-		{
-			if ( piece.getColour() != king.getColour() )
-			{
-				if ( piece.getPossibleMoves().contains( kingPosition ) )
-				{
-					reversibleMover.reverseLastMove();
-					return true;
-				}
-			}
-		}
-
-		reversibleMover.reverseLastMove();
-		return false;
+		return squares[ row ].length;
 	}
 
-	private boolean playerCanMove ( TwoPlayerColour playerColour )
+	public int getColumnLength ( int column )
 	{
-		Set<Piece> currentPieces = new HashSet<Piece>( pieces );
-		for ( Piece piece : currentPieces )
-		{
-			if ( piece.getColour() == playerColour )
-			{
-				for ( Position movePos : piece.getPossibleMoves() )
-				{
-					if ( !moveResultHasOwnKingInCheck( piece, movePos.x, movePos.y ) )
-						return true;
-				}
-			}
-		}
-
-		return false;
+		return squares.length;
 	}
 
-	private class ReversibleMover
+	public Map<TwoPlayerColour, Set<King>> getPlayersKings ()
 	{
-		private ReversalData data;
-
-		public void doMove ( Piece piece, int newX, int newY )
-		{
-			data = new ReversalData( piece, newX, newY );
-
-			pieces.remove( data.pieceTaken );
-
-			setPiece( null, data.oldX, data.oldY );
-			setPiece( data.movedPiece, data.newX, data.newY );
-		}
-
-		public void reverseLastMove ()
-		{
-			if ( data.pieceTaken != null )
-			{
-				pieces.add( data.pieceTaken );
-			}
-
-			setPiece( data.movedPiece, data.oldX, data.oldY );
-			setPiece( data.pieceTaken, data.newX, data.newY );
-			data.movedPiece.setHasMoved( data.hadMoved );
-		}
-
-		private class ReversalData
-		{
-			public final Piece		movedPiece;
-			public final int		oldX;
-			public final int		oldY;
-			public final int		newX;
-			public final int		newY;
-			public final boolean	hadMoved;
-			public final Piece		pieceTaken;
-
-			public ReversalData( Piece piece, int newX, int newY )
-			{
-				this.movedPiece = piece;
-				this.oldX = piece.getX();
-				this.oldY = piece.getY();
-				this.newX = newX;
-				this.newY = newY;
-				this.hadMoved = piece.hasMoved();
-				this.pieceTaken = getPiece( newX, newY );
-			}
-		}
+		return playersKings;
 	}
 
-	public class GameWonFirer
+	public MovementLogic getMovementLogic ()
+	{
+		return movementLogic;
+	}
+
+	public CastlingLogic getCastlingLogic ()
+	{
+		return castlingLogic;
+	}
+
+	public static class GameWonFirer
 	{
 		EventListenerList gameWonListenerList = new EventListenerList();
 
@@ -262,7 +159,7 @@ public class Board
 			gameWonListenerList.remove( GameWonListener.class, listener );
 		}
 
-		private final void fireGameWonEvent ( TwoPlayerColour colourThatWon )
+		final void fireGameWonEvent ( TwoPlayerColour winningColour )
 		{
 			Object[] listeners = gameWonListenerList.getListenerList();
 
@@ -270,10 +167,9 @@ public class Board
 			{
 				if ( listeners[ i ] == GameWonListener.class )
 				{
-					( (GameWonListener) listeners[ i + 1 ] ).gameWon( colourThatWon );
+					( (GameWonListener) listeners[ i + 1 ] ).gameWon( winningColour );
 				}
 			}
 		}
 	}
-
 }

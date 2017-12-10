@@ -52,10 +52,10 @@ public abstract class PopPiece extends Piece
 		if ( !board.isASquare( x, y ) )
 			return false;
 
-		if ( !board.isEmptySquare( x, y ) && !( board.getPotentialPiece( x, y ).colour != this.colour ) )
-			return false;
+		if ( board.isEmptySquare( x, y ) || ( board.getPiece( x, y ).colour != this.colour ) )
+			return true;
 
-		return true;
+		return false;
 	}
 
 }

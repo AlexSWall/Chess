@@ -7,6 +7,7 @@ import org.newdawn.slick.Input;
 
 import game.GameSettings;
 import game.NewGameEventFirer;
+import game.board.BoardSetupType;
 import game.modes.TwoPlayerColour;
 import view.menu.MenuData.Action;
 
@@ -143,7 +144,7 @@ public class MenuData
 		@Override
 		public void act ()
 		{
-			GameSettings settings = new GameSettings( true, generatePlayerColour() == TwoPlayerColour.WHITE );
+			GameSettings settings = new GameSettings( BoardSetupType.STANDARD, generatePlayerColour() == TwoPlayerColour.WHITE );
 			fireNewGameEvent( settings );
 		}
 	}
@@ -154,7 +155,7 @@ public class MenuData
 		@Override
 		public void act ()
 		{
-			GameSettings settings = new GameSettings( false, generatePlayerColour() == TwoPlayerColour.WHITE );
+			GameSettings settings = new GameSettings( BoardSetupType.CHESS960, generatePlayerColour() == TwoPlayerColour.WHITE );
 			fireNewGameEvent( settings );
 		}
 	}

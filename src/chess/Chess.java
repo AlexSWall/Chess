@@ -7,19 +7,17 @@ import javax.swing.SwingUtilities;
 
 /*
  * TODO:
- * 0. Click to move.
- * 1. Pawn Promotion and En Passant
- * 2. Castling
- * 3. New pieces (range-limited sliders, interesting placers,
- * extradimensional...)
- * 4. Override canBeMoved methods for speed.
- * 5. Remove extra boundary checks for pawns by guaranteeing sensible
- * promotions.
- * 6. Make sure 'getPossibleMove' methods are as fast as possible.
- * 7. Implement other chessboard types (chess960, cylinder,...)
- * 8. StartCustomGame main menu button.
+ * -> Add clicking to move.
+ *
+ * -> Speed up canBeMoved, getPossibleMove, checking for possible moves/check, etc.
+ *
+ * -> Add functionality:
+ * - -> New pieces (range-limited sliders, interesting placers, extradimensional...)
+ * - -> Implement other chessboard types (cylinder...)
+ * - -> Add new game versions (hoard, 4 player chess, etc.)
  */
 
+// A 'movement' returns a map mapping pieces (which move) to their new locations?
 public class Chess
 {
 	static final String	GAMENAME	= "Chess";

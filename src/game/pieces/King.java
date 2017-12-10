@@ -4,22 +4,22 @@ import java.util.HashSet;
 import java.util.Set;
 
 import game.board.Board;
+import game.board.CastlingLogic;
 import game.board.Position;
 import game.modes.TwoPlayerColour;
 
 public class King extends Piece
 {
-	private static final int[][]	deltaPopPlaces	= { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, 1 } };
-	private static final int[][]	castlingDeltas	= { { 2, 0 }, { -2, 0 } };
+	private static final int[][] deltaPopPlaces = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, -1 }, { -1, 0 }, { -1, 1 } };
+
+	private final CastlingLogic castlingLogic;
 
 	public King( Board board, TwoPlayerColour colour, Integer x, Integer y )
 	{
 		super( board, "King", colour, x, y );
+		castlingLogic = board.getCastlingLogic();
 	}
 
-	/**
-	 * Gets final absolute position.
-	 */
 	@Override
 	public Set<Position> getPossibleMoves ()
 	{
@@ -33,82 +33,25 @@ public class King extends Piece
 			}
 		}
 
-		for ( int[] castlingDelta : castlingDeltas )
-			if ( canCastleToDelta( castlingDelta[ 0 ], castlingDelta[ 1 ] ) )
-			{
-				possibleMoves.add( new Position( x + castlingDelta[ 0 ], y + castlingDelta[ 1 ] ) );
-			}
+		castlingLogic.addPossibleCastlingMoves( this, possibleMoves );
 
 		return possibleMoves;
-	}
-
-	private boolean canCastleToDelta ( int dx, int dy )
-	{
-		// King must not have moved.
-		if ( hasMoved )
-			return false;
-
-		// A rook which hasn't moved must be the next piece in the direction.
-		if ( !castlingRookExistsInDirection( dx, dy ) )
-			return false;
-
-		// The king cannot be in check, move through check, or end in check.
-		if ( !castlingMovementAvoidsCheck( dx, dy ) )
-			return false;
-
-		return true;
-	}
-
-	private boolean castlingRookExistsInDirection ( int dx, int dy )
-	{
-		int middleX, middleY;
-		boolean castleInX = ( dx != 0 );
-		Piece nextPieceInPath;
-
-		for ( int distance = 1;; distance++ ) // Increase distance until we find the rook.
-		{
-			middleX = this.x + ( castleInX ? distance : 0 );
-			middleY = this.y + ( castleInX ? 0 : distance );
-
-			if ( !board.isASquare( middleX, middleY ) ) // No rook found.
-				return false;
-
-			if ( board.hasPiece( middleX, middleY ) ) // This piece must be a rook of the same colour which has not moved.
-			{
-				nextPieceInPath = board.getPiece( middleX, middleY );
-
-				if ( nextPieceInPath.getClass() != Rook.class )
-					return false;
-				else if ( nextPieceInPath.getColour() != this.getColour() )
-					return false;
-				else if ( board.getPiece( middleX, middleY ).hasMoved() )
-					return false;
-				else
-				{
-					break;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	public boolean castlingMovementAvoidsCheck ( int dx, int dy )
-	{
-
-		return false;
 	}
 
 	@Override
 	public boolean isMove ( int x, int y )
 	{
-		if ( !canPopTo( x, y ) )
-			return false;
+		return getPossibleMoves().contains( new Position( x, y ) );
+	}
 
-		if ( !getPossibleMoves().contains( new Position( x, y ) ) )
-			return false;
-
-		return true;
+	public boolean isAdjacentTo ( int x, int y )
+	{
+		for ( int[] delta : deltaPopPlaces )
+		{
+			if ( this.x + delta[ 0 ] == x && this.y + delta[ 1 ] == y )
+				return true;
+		}
+		return false;
 	}
 
 	private boolean canPopTo ( int x, int y )
@@ -116,9 +59,9 @@ public class King extends Piece
 		if ( !board.isASquare( x, y ) )
 			return false;
 
-		if ( !board.isEmptySquare( x, y ) && !( board.getPotentialPiece( x, y ).colour != this.colour ) )
-			return false;
+		if ( board.isEmptySquare( x, y ) || ( board.getPiece( x, y ).colour != this.colour ) )
+			return true;
 
-		return true;
+		return false;
 	}
 }

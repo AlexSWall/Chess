@@ -1,16 +1,17 @@
 package game;
 
+import game.board.BoardSetupType;
 import game.modes.TwoPlayerColour;
 
 public class GameSettings
 {
-	public final boolean			useDefaultSetup;
+	public final BoardSetupType		type;
 	public final boolean			isWhite;
 	public final TwoPlayerColour	playerColour;
 
-	public GameSettings( boolean useDefaultSetup, boolean isWhite )
+	public GameSettings( BoardSetupType type, boolean isWhite )
 	{
-		this.useDefaultSetup = useDefaultSetup;
+		this.type = type;
 		this.isWhite = isWhite;
 		this.playerColour = ( isWhite ? TwoPlayerColour.WHITE : TwoPlayerColour.BLACK );
 	}

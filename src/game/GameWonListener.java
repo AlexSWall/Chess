@@ -7,5 +7,5 @@ import game.modes.TwoPlayerColour;
 public interface GameWonListener
 		extends EventListener
 {
-	public void gameWon ( TwoPlayerColour colourThatWon );
+	public void gameWon ( TwoPlayerColour winningColour );
 }
