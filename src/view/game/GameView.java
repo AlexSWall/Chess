@@ -43,6 +43,10 @@ public class GameView extends BasicGameState
 	@Override
 	public void render ( GameContainer gc, StateBasedGame sbg, Graphics g ) throws SlickException
 	{
+		float xScale = mainView.getAppSettings().width / (float) mainView.getAppSettings().defaultWidth;
+		float yScale = mainView.getAppSettings().height / (float) mainView.getAppSettings().defaultHeight;
+		g.scale( xScale, yScale );
+
 		board.boardImage.draw( 0, 0 );
 
 		if ( promotionView.isActive() )
@@ -69,8 +73,8 @@ public class GameView extends BasicGameState
 
 		if ( pieceBeingDragged != null )
 		{
-			x = mousePosition.x - 40;
-			y = mousePosition.y - 40;
+			x = (int) ( ( mousePosition.x ) / xScale - 40 );
+			y = (int) ( ( mousePosition.y ) / yScale - 50 );
 			pieceBeingDragged.getImage().draw( x, y );
 		}
 	}
@@ -81,7 +85,6 @@ public class GameView extends BasicGameState
 		Input input = gc.getInput();
 
 		mousePosition = new Position( input.getMouseX(), input.getMouseY() );
-
 	}
 
 	@Override
@@ -126,8 +129,8 @@ public class GameView extends BasicGameState
 
 	private Position viewToGridCoordinates ( int theta, int x, int y )
 	{
-		int gridX = (int) ( ( x - 1 ) / 83.33 );
-		int gridY = (int) ( ( y - 1 ) / 83.33 );
+		int gridX = (int) ( ( x - 1 ) / ( mainView.getAppSettings().width / 8.0 ) );
+		int gridY = (int) ( ( y - 1 ) / ( mainView.getAppSettings().height / 8.0 ) );
 
 		switch ( theta )
 		{
@@ -142,18 +145,16 @@ public class GameView extends BasicGameState
 
 	private Position gridToViewCoordinates ( int theta, int x, int y )
 	{
-		int viewX = (int) ( 1 + 83.33 * x );
-		int viewY = (int) ( 1 + 83.33 * y );
-
-		switch ( theta )
+		if ( theta == 180 )
 		{
-			case 0:
-				return new Position( viewX, viewY );
-			case 180:
-				return new Position( mainView.getAppSettings().width - 82 - viewX - 1, mainView.getAppSettings().height - 82 - viewY - 1 );
-			default:
-				return null;
+			int tmp = board.getRowLength( y ) - x - 1;
+			y = board.getColumnLength( x ) - y - 1;
+			x = tmp;
 		}
+		int viewX = (int) ( 1 + ( mainView.getAppSettings().defaultWidth / 8.0 ) * x );
+		int viewY = (int) ( 1 + ( mainView.getAppSettings().defaultHeight / 8.0 ) * y );
+
+		return new Position( viewX, viewY );
 	}
 
 	/**

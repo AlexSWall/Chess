@@ -16,12 +16,15 @@ import javax.swing.SwingUtilities;
 
 public class Chess
 {
-	static final String	GAMENAME	= "Chess";
-	static final String	VERSION		= "v0.1";
-	static final int	WIDTH		= 666;
-	static final int	HEIGHT		= 666;
+	static final String	GAMENAME		= "Chess";
+	static final String	VERSION			= "v0.1";
+	static final int	NATIVE_WIDTH	= 666;
+	static final int	NATIVE_HEIGHT	= 666;
 
-	public static final AppSettings settings = new AppSettings( GAMENAME, VERSION, WIDTH, HEIGHT );
+	static final int	WIDTH	= 666;
+	static final int	HEIGHT	= 666;
+
+	public static final AppSettings settings = new AppSettings( GAMENAME, VERSION, NATIVE_WIDTH, NATIVE_HEIGHT, WIDTH, HEIGHT );
 
 	public static void main ( String[] args )
 	{

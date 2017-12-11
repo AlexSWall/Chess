@@ -10,11 +10,13 @@ import view.View;
 
 public class MenuView extends BasicGameState
 {
+	private final View		mainView;
 	private final MenuData	menuData;
 	private final int		ID;
 
 	public MenuView( View mainView, int ID )
 	{
+		this.mainView = mainView;
 		this.menuData = new MenuData();
 		this.ID = ID;
 	}
@@ -28,6 +30,8 @@ public class MenuView extends BasicGameState
 	@Override
 	public void render ( GameContainer gc, StateBasedGame sbg, Graphics g ) throws SlickException
 	{
+		g.scale( mainView.getAppSettings().width / 666f, mainView.getAppSettings().height / 666f );
+
 		menuData.getBackground().draw( 0, 0 );
 	}
 

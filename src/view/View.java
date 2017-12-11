@@ -1,5 +1,6 @@
 package view;
 
+import org.lwjgl.opengl.Display;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
@@ -44,6 +45,7 @@ public class View extends StateBasedGame
 	{
 		try
 		{
+			Display.setResizable( false );
 			appGameContainer = new AppGameContainer( this );
 			appGameContainer.setDisplayMode( settings.width, settings.height, false );
 			appGameContainer.setVSync( true );
