@@ -34,22 +34,22 @@ public class PromotionView
 
 	public void render ( GameContainer gc, StateBasedGame sbg, Graphics g ) throws SlickException
 	{
-		renderPosition = view.gridLocationToView( 2, gridYValue );
+		renderPosition = view.gridToViewCoordinates( 2, gridYValue );
 		knight.draw( renderPosition.x, renderPosition.y );
 
-		renderPosition = view.gridLocationToView( 3, gridYValue );
+		renderPosition = view.gridToViewCoordinates( 3, gridYValue );
 		bishop.draw( renderPosition.x, renderPosition.y );
 
-		renderPosition = view.gridLocationToView( 4, gridYValue );
+		renderPosition = view.gridToViewCoordinates( 4, gridYValue );
 		rook.draw( renderPosition.x, renderPosition.y );
 
-		renderPosition = view.gridLocationToView( 5, gridYValue );
+		renderPosition = view.gridToViewCoordinates( 5, gridYValue );
 		queen.draw( renderPosition.x, renderPosition.y );
 	}
 
 	public void mousePressed ( int button, int x, int y )
 	{
-		Position gridPos = view.viewLocationToGrid( x, y );
+		Position gridPos = view.viewToGridCoordinates( x, y );
 
 		if ( gridPos.y != gridYValue )
 			return;
@@ -98,7 +98,7 @@ public class PromotionView
 	{
 		this.active = true;
 		this.pawn = pawn;
-		this.gridYValue = ( view.getBoard().getColourAtBottom() == pawn.getColour() ? 6 : 1 );
+		this.gridYValue = ( pawn.getColour() == TwoPlayerColour.WHITE ? 6 : 1 );
 
 		try
 		{

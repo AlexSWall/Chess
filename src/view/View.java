@@ -1,9 +1,13 @@
 package view;
 
+import org.lwjgl.opengl.Display;
 import org.newdawn.slick.AppGameContainer;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.StateBasedGame;
+import org.newdawn.slick.state.transition.FadeInTransition;
+import org.newdawn.slick.state.transition.FadeOutTransition;
 
 import chess.AppSettings;
 import game.GameSettings;
@@ -41,6 +45,7 @@ public class View extends StateBasedGame
 	{
 		try
 		{
+			Display.setResizable( false );
 			appGameContainer = new AppGameContainer( this );
 			appGameContainer.setDisplayMode( settings.width, settings.height, false );
 			appGameContainer.setVSync( true );
@@ -55,11 +60,26 @@ public class View extends StateBasedGame
 
 	public void startGame ( GameSettings settings )
 	{
-		this.enterState( State.GAME.getValue() );
+		fadeChangeState( State.GAME, 1000, 400 );
+	}
+
+	public void leaveGame ()
+	{
+		fadeChangeState( State.MENU, 6000, 400 );
+	}
+
+	private void fadeChangeState ( State state, int fadeoutMillis, int fadeinMillis )
+	{
+		this.enterState( state.getValue(), new FadeOutTransition( Color.black, fadeoutMillis ), new FadeInTransition( Color.black, fadeinMillis ) );
 	}
 
 	public GameView getGameView ()
 	{
 		return game;
+	}
+
+	public AppSettings getAppSettings ()
+	{
+		return settings;
 	}
 }

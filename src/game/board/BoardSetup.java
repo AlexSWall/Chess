@@ -30,7 +30,6 @@ public class BoardSetup
 
 	private Square[][]						squares;
 	private TwoPlayerColour					playerTurn;
-	private TwoPlayerColour					colourAtBottom;
 	private Set<Piece>						pieces;
 	private Map<TwoPlayerColour, Set<King>>	playersKings;
 
@@ -86,11 +85,6 @@ public class BoardSetup
 		return nextTurnFunc;
 	}
 
-	public TwoPlayerColour getColourAtBottom ()
-	{
-		return colourAtBottom;
-	}
-
 	protected void setupBoard ()
 	{
 		this.squares = new Square[ 8 ][ 8 ];
@@ -102,9 +96,6 @@ public class BoardSetup
 				squares[ i ][ j ] = new Square( j, i );
 			}
 		}
-
-		colourAtBottom = settings.playerColour;
-
 		playerTurn = TwoPlayerColour.WHITE;
 
 		nextTurnFunc = new Function<TwoPlayerColour, TwoPlayerColour>()
@@ -124,7 +115,7 @@ public class BoardSetup
 		pieces = new HashSet<Piece>();
 		playersKings = new HashMap<TwoPlayerColour, Set<King>>();
 
-		for ( TwoPlayerColour colour : TwoPlayerColour.values() )
+		for ( TwoPlayerColour colour : TwoPlayerColour.getPlayerColours() )
 		{
 			playersKings.put( colour, new HashSet<King>() );
 		}
@@ -240,13 +231,13 @@ public class BoardSetup
 
 		for ( int j = 0; j < piecesToPlace.size(); j++ )
 		{
-			squares[ 1 ][ j ].setPiece( new Pawn( board, settings.isWhite ? TwoPlayerColour.BLACK : TwoPlayerColour.WHITE, j, 1 ) );
-			squares[ 6 ][ j ].setPiece( new Pawn( board, !settings.isWhite ? TwoPlayerColour.BLACK : TwoPlayerColour.WHITE, j, 6 ) );
+			squares[ 1 ][ j ].setPiece( new Pawn( board, TwoPlayerColour.BLACK, j, 1 ) );
+			squares[ 6 ][ j ].setPiece( new Pawn( board, TwoPlayerColour.WHITE, j, 6 ) );
 		}
 
-		for ( TwoPlayerColour colour : TwoPlayerColour.values() )
+		for ( TwoPlayerColour colour : TwoPlayerColour.getPlayerColours() )
 		{
-			yPos = ( colour == ( settings.isWhite ? TwoPlayerColour.BLACK : TwoPlayerColour.WHITE ) ? 0 : 7 );
+			yPos = ( colour == TwoPlayerColour.WHITE ? 7 : 0 );
 
 			for ( xPos = 0; xPos < piecesToPlace.size(); xPos++ )
 			{

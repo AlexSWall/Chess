@@ -38,22 +38,28 @@ public class MovementLogic
 		nextTurnFunc = setup.getNextTurnFunction();
 	}
 
+	public TwoPlayerColour getPlayerTurn ()
+	{
+		return playerTurn;
+	}
+
 	/**
 	 * This function is called by the GUI when it is informing of an attempt to move a piece to a square.
 	 *
 	 * @param piece The piece being moved.
 	 * @param newX The x-coordinate of the destination.
 	 * @param newY The y-coordinate of the destination.
+	 * @return Whether the movement was successful.
 	 */
-	public void tryToMovePiece ( Piece piece, int newX, int newY )
+	public boolean tryToMovePiece ( Piece piece, int newX, int newY )
 	{
 		int oldY = piece.getY();
 
 		if ( piece.getColour() != playerTurn )
-			return;
+			return false;
 
 		if ( !piece.isMove( newX, newY ) )
-			return;
+			return false;
 
 		boolean isAttemptingCastling = castlingLogic.isAttemptedCastlingMove( piece, newX, newY );
 		boolean isAttemptingEnPassant = piece instanceof Pawn && ( (Pawn) piece ).canEnPassant( newX, newY );
@@ -62,7 +68,7 @@ public class MovementLogic
 		if ( isKingInCheck( piece.getColour() ) )
 		{
 			reversibleMover.reverseLastMove();
-			return;
+			return false;
 		}
 
 		if ( piece instanceof Pawn )
@@ -76,13 +82,18 @@ public class MovementLogic
 
 		pieceJustMoved = piece;
 		pawnJustJumped = pieceJustMoved instanceof Pawn && Math.abs( newY - oldY ) == 2;
+		TwoPlayerColour nextPlayersTurn = nextTurnFunc.apply( piece.getColour() );
 
-		playerTurn = nextTurnFunc.apply( piece.getColour() );
-
-		if ( !playerCanMove( playerTurn ) )
+		if ( !playerCanMove( nextPlayersTurn ) )
 		{
 			board.gameWonFirer.fireGameWonEvent( isKingInCheck( playerTurn ) ? piece.getColour() : null );
 		}
+		else
+		{
+			playerTurn = nextPlayersTurn;
+		}
+
+		return true;
 	}
 
 	public boolean canTakePassingPawn ( Piece piece )

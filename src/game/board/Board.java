@@ -30,7 +30,7 @@ public class Board
 	private Square[][]						squares;
 	private Set<Piece>						pieces;
 	private Map<TwoPlayerColour, Set<King>>	playersKings;
-	private TwoPlayerColour					colourAtBottom;
+	private TwoPlayerColour					humanPlayerColour;
 
 	private PromotionListener listener;
 
@@ -50,7 +50,7 @@ public class Board
 
 	public void setup ( GameSettings settings )
 	{
-		System.out.println( "Setting Up" );
+		System.out.println( "Setting Up Board." );
 		this.settings = settings;
 
 		BoardSetup setup = new BoardSetup( this, settings );
@@ -59,7 +59,7 @@ public class Board
 		castlingLogic = new CastlingLogic( this, settings );
 		movementLogic = new MovementLogic( this, setup, castlingLogic, listener );
 
-		colourAtBottom = setup.getColourAtBottom();
+		humanPlayerColour = settings.playerColour;
 		squares = setup.getNewBoardSquares();
 		pieces = setup.getPieces();
 		playersKings = setup.getPlayerKingsMap();
@@ -75,9 +75,9 @@ public class Board
 		return pieces;
 	}
 
-	public TwoPlayerColour getColourAtBottom ()
+	public TwoPlayerColour getHumanPlayerColour ()
 	{
-		return colourAtBottom;
+		return humanPlayerColour;
 	}
 
 	public void setPromotionListener ( PromotionListener listener )

@@ -54,7 +54,7 @@ public class MenuData
 		return graphics.getBackground( optionSelected );
 	}
 
-	public int update ( Input input, int delta )
+	public void update ( Input input, int delta )
 	{
 		if ( !( input.isKeyDown( Input.KEY_DOWN ) || input.isKeyDown( Input.KEY_UP ) ) )
 		{
@@ -102,12 +102,10 @@ public class MenuData
 			buttonTimer += delta;
 		}
 
-		if ( input.isKeyDown( Input.KEY_ENTER ) )
+		if ( input.isKeyPressed( Input.KEY_ENTER ) )
 		{
 			menuRoot.children.get( optionSelected ).data.action.act();
 		}
-
-		return -1;
 	}
 
 	private int modulo ( int n, int m )
@@ -122,15 +120,10 @@ public class MenuData
 
 	protected TwoPlayerColour generatePlayerColour ()
 	{
-		TwoPlayerColour playerColour = TwoPlayerColour.WHITE;
-		if ( optionsAction.random )
-		{
-			if ( ( new Random() ).nextInt( 2 ) == 0 )
-			{
-				playerColour = TwoPlayerColour.BLACK;
-			}
-		}
-		return playerColour;
+		if ( optionsAction.twoPlayered )
+			return TwoPlayerColour.BOTH;
+		else
+			return ( ( new Random() ).nextInt( 2 ) == 0 ? TwoPlayerColour.WHITE : TwoPlayerColour.BLACK );
 	}
 
 	interface Action
@@ -144,7 +137,7 @@ public class MenuData
 		@Override
 		public void act ()
 		{
-			GameSettings settings = new GameSettings( BoardSetupType.STANDARD, generatePlayerColour() == TwoPlayerColour.WHITE );
+			GameSettings settings = new GameSettings( BoardSetupType.STANDARD, generatePlayerColour() );
 			fireNewGameEvent( settings );
 		}
 	}
@@ -155,7 +148,7 @@ public class MenuData
 		@Override
 		public void act ()
 		{
-			GameSettings settings = new GameSettings( BoardSetupType.CHESS960, generatePlayerColour() == TwoPlayerColour.WHITE );
+			GameSettings settings = new GameSettings( BoardSetupType.CHESS960, generatePlayerColour() );
 			fireNewGameEvent( settings );
 		}
 	}
@@ -163,12 +156,12 @@ public class MenuData
 	class OptionsAction
 			implements Action
 	{
-		public boolean random = false;
+		public boolean twoPlayered = false;
 
 		@Override
 		public void act ()
 		{
-			random = !random;
+			twoPlayered = !twoPlayered;
 		}
 	}
 

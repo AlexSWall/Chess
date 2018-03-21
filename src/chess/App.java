@@ -57,13 +57,16 @@ public class App
 		if ( winningColour != null )
 		{
 			logger.log( Level.FINE, "Game has been won by " + winningColour.toString() + "." );
+			System.out.println( "Game has been won by " + winningColour.toString() + "." );
 			// view.enterState( State.MENU.getValue() );
 		}
 		else
 		{
 			logger.log( Level.FINE, "Game has been drawn." );
+			System.out.println( "Game has been drawn." );
 			//			view.enterState( State.MENU.getValue() );
 		}
+		view.leaveGame();
 	}
 
 	@Override

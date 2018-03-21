@@ -4,5 +4,5 @@ public interface PlayerColour
 {
 	public int getPawnMovement ();
 
-	public PlayerColour getNextTurnsColour ( PlayerColour colour );
+	public PlayerColour getNextTurnsColour ();
 }

@@ -6,13 +6,18 @@ import game.modes.TwoPlayerColour;
 public class GameSettings
 {
 	public final BoardSetupType		type;
-	public final boolean			isWhite;
 	public final TwoPlayerColour	playerColour;
+	public final boolean			boardRotates;
 
-	public GameSettings( BoardSetupType type, boolean isWhite )
+	public GameSettings( BoardSetupType type, TwoPlayerColour colour )
 	{
 		this.type = type;
-		this.isWhite = isWhite;
-		this.playerColour = ( isWhite ? TwoPlayerColour.WHITE : TwoPlayerColour.BLACK );
+		this.playerColour = colour;
+		this.boardRotates = playerColour == TwoPlayerColour.BOTH;
+	}
+
+	public boolean boardRotates ()
+	{
+		return boardRotates;
 	}
 }
